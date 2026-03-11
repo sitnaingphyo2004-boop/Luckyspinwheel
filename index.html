@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Spin Wheel</title>
+    <style>
+        body {
+            font-family: 'Padauk', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border: 5px solid #fff;
+            box-sizing: border-box;
+        }
+
+        .pointer {
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-right: 35px solid #2c3e50;
+            z-index: 10;
+            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.3));
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #resultText {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 20px;
+            min-height: 35px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Lucky Spin Wheel</h1>
+
+    <div class="wheel-container">
+        <canvas id="wheel" width="400" height="400"></canvas>
+        <div class="pointer"></div>
+    </div>
+
+    <button id="spinBtn" onclick="spin()">လှည့်မည်</button>
+    <p id="resultText"></p>
+
+    <script>
+        const segments = ["ထပ်မံကံစမ်းပါ", "နောက်တစ်ကြိမ်လှည့်ပါ", "M-150", "C-vitt", "Sting"];
+        
+        const colors = [
+            "#7f8c8d", 
+            "#3498db", 
+            "#f1c40f", 
+            "#e67e22", 
+            "#e74c3c"  
+        ];
+
+        const canvas = document.getElementById("wheel");
+        const ctx = canvas.getContext("2d");
+        const numSegments = segments.length;
+        const sliceAngle = (2 * Math.PI) / numSegments;
+
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX;
+
+            for (let i = 0; i < numSegments; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 18px sans-serif";
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(segments[i], radius - 20, 6);
+                ctx.restore();
+            }
+        }
+
+        drawWheel(); 
+
+        let spinCount = 0; // လှည့်တဲ့အကြိမ်ရေ မှတ်သားရန်
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        function spin() {
+            if (isSpinning) return; 
+            isSpinning = true;
+            spinCount++; // တစ်ခါနှိပ်တိုင်း ၁ တိုးမည်
+            
+            document.getElementById("resultText").innerText = "ကံစမ်းနေပါသည်...";
+            document.getElementById("spinBtn").disabled = true;
+
+            let targetIndex;
+            
+            // ထိန်းချုပ်မှု Logic အသစ်: ၆ ကြိမ်မြောက်တိုင်းမှာ ဆုကျမည် (Cycle ပြန်စမည်)
+            // ဥပမာ - ၆ ကြိမ်၊ ၁၂ ကြိမ်၊ ၁၈ ကြိမ်မြောက် စသဖြင့်
+            if (spinCount % 6 === 0) {
+                // ဆု ၄ ခုထဲက Random ရွေးမည် (Index 1 မှ 4)
+                targetIndex = Math.floor(Math.random() * 4) + 1;
+            } else {
+                // ကျန်တဲ့ ၅ ခါလုံး ဗလာချည်းသာ ကျမည် (Index 0)
+                targetIndex = 0; 
+            }
+
+            const degreesPerSlice = 360 / numSegments;
+            const randomOffset = Math.floor(Math.random() * (degreesPerSlice - 10)) + 5; 
+            const base = Math.floor(currentRotation / 360) * 360;
+            const targetDegree = 360 - (targetIndex * degreesPerSlice + randomOffset);
+            
+            // ယခင်လည်ထားတဲ့နေရာကနေ ၅ ပတ်ပိုလည်ပြီး ဆက်လည်မယ်
+            const newRotation = base + (360 * 5) + targetDegree;
+
+            currentRotation = newRotation;
+            
+            canvas.style.transition = "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"; 
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                document.getElementById("spinBtn").disabled = false;
+                
+                if (targetIndex === 0) {
+                    document.getElementById("resultText").style.color = "#7f8c8d";
+                    document.getElementById("resultText").innerText = `ရလဒ်: ${segments[targetIndex]}`;
+                } else {
+                    document.getElementById("resultText").style.color = "#27ae60";
+                    document.getElementById("resultText").innerText = `ဂုဏ်ယူပါတယ်! သင် ${segments[targetIndex]} ရရှိပါသည်`;
+                }
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
