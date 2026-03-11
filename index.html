@@ -3,90 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Spin Wheel</title>
+    <title>Lucky Spin Wheel - Pro Edition</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+
         body {
             font-family: 'Padauk', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f4f8;
+            background: linear-gradient(135deg, #1e272e, #2f3640);
+            color: #ecf0f1;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
+            min-height: 100vh;
         }
 
         h1 {
-            color: #2c3e50;
-            font-size: 36px;
-            margin-bottom: 30px;
+            color: #f1c40f;
+            font-size: 38px;
+            margin-bottom: 40px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 3px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .wheel-container {
             position: relative;
-            width: 400px;
-            height: 400px;
-            margin-bottom: 30px;
+            width: 380px;
+            height: 380px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        /* Premium Wheel Styling */
         #wheel {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            border: 5px solid #fff;
-            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 0 0 8px #2c3e50, 0 0 0 12px #f1c40f;
+            background-color: #fff;
         }
 
+        /* 3D ဆန်ဆန် လှပသော မြှား (Top Pointer) */
         .pointer {
             position: absolute;
-            top: 50%;
-            right: -25px;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-            border-right: 35px solid #2c3e50;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 55px;
+            background: #e74c3c;
+            clip-path: polygon(50% 100%, 0 20%, 0 0, 100% 0, 100% 20%);
             z-index: 10;
-            filter: drop-shadow(-2px 2px 2px rgba(0,0,0,0.3));
+            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+            border-top: 5px solid #c0392b;
         }
 
-        button {
-            padding: 15px 40px;
-            font-size: 20px;
+        /* မြှားပေါ်က အလှဆင် ရွှေရောင်စက်ဝိုင်းလေး */
+        .pointer::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: #f1c40f;
+            border-radius: 50%;
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3);
+        }
+
+        .btn-glow {
+            padding: 18px 50px;
+            font-size: 22px;
+            font-family: 'Padauk', sans-serif;
             font-weight: bold;
             cursor: pointer;
-            background: linear-gradient(135deg, #00b09b, #96c93d);
+            background: linear-gradient(to right, #00b09b, #96c93d);
             color: white;
             border: none;
             border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 25px rgba(0, 176, 155, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 176, 155, 0.6);
         }
 
-        button:disabled {
-            background: #95a5a6;
+        .btn-glow:active {
+            transform: translateY(1px);
+        }
+
+        .btn-glow:disabled {
+            background: #7f8c8d;
             cursor: not-allowed;
-            transform: none;
             box-shadow: none;
+            transform: none;
+            color: #bdc3c7;
         }
 
         #resultText {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
-            color: #e74c3c;
-            margin-top: 20px;
-            min-height: 35px;
+            margin-top: 30px;
+            min-height: 40px;
             text-align: center;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
+
+        .win-text { color: #2ecc71; }
+        .lose-text { color: #e74c3c; }
+        .spin-text { color: #f1c40f; }
+
     </style>
 </head>
 <body>
@@ -94,22 +129,23 @@
     <h1>Lucky Spin Wheel</h1>
 
     <div class="wheel-container">
-        <canvas id="wheel" width="400" height="400"></canvas>
         <div class="pointer"></div>
+        <canvas id="wheel" width="380" height="380"></canvas>
     </div>
 
-    <button id="spinBtn" onclick="spin()">လှည့်မည်</button>
+    <button id="spinBtn" class="btn-glow" onclick="spin()">လှည့်မည်</button>
     <p id="resultText"></p>
 
     <script>
-        const segments = ["ထပ်မံကံစမ်းပါ", "နောက်တစ်ကြိမ်လှည့်ပါ", "M-150", "C-vitt", "Sting"];
+        const segments = ["ထပ်မံကံစမ်းပါ", "နောက်တစ်ကြိမ်", "M-150", "C-vitt", "Sting"];
         
+        // Premium အရောင်များ (Deep & Vibrant Colors)
         const colors = [
-            "#7f8c8d", 
-            "#3498db", 
-            "#f1c40f", 
-            "#e67e22", 
-            "#e74c3c"  
+            "#576574", // Dark Gray (ထပ်မံကံစမ်းပါ)
+            "#2e86de", // Deep Blue (နောက်တစ်ကြိမ်)
+            "#feca57", // Golden Yellow (M-150)
+            "#ff9f43", // Vibrant Orange (C-vitt)
+            "#ee5253"  // Bright Red (Sting)
         ];
 
         const canvas = document.getElementById("wheel");
@@ -123,63 +159,100 @@
             const radius = centerX;
 
             for (let i = 0; i < numSegments; i++) {
+                // အပိုင်းများ ဆွဲခြင်း
                 ctx.beginPath();
                 ctx.fillStyle = colors[i];
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
                 ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffffff";
                 ctx.stroke();
 
+                // စာသားများကို ဖတ်ရလွယ်အောင် ဗဟိုကနေ ဖြာထွက်တဲ့ပုံစံ ရေးခြင်း
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(i * sliceAngle + sliceAngle / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 18px sans-serif";
-                ctx.shadowColor = "rgba(0,0,0,0.5)";
-                ctx.shadowBlur = 4;
-                ctx.fillText(segments[i], radius - 20, 6);
+                ctx.font = "bold 22px 'Padauk', sans-serif";
+                ctx.shadowColor = "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = 6;
+                // အစွန်ကနေ အနည်းငယ်ခွာပြီးရေးမည်
+                ctx.fillText(segments[i], radius - 30, 8);
                 ctx.restore();
             }
+
+            // Wheel ရဲ့ အလယ်ဗဟိုမှာ ရွှေရောင် ဝင်ရိုး (Center Hub) ထည့်ခြင်း
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+            ctx.fillStyle = "#2c3e50";
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#f1c40f";
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = "#f1c40f";
+            ctx.fill();
         }
 
         drawWheel(); 
 
-        let spinCount = 0; // လှည့်တဲ့အကြိမ်ရေ မှတ်သားရန်
+        let spinCount = 0; 
         let currentRotation = 0;
         let isSpinning = false;
 
         function spin() {
             if (isSpinning) return; 
             isSpinning = true;
-            spinCount++; // တစ်ခါနှိပ်တိုင်း ၁ တိုးမည်
+            spinCount++; 
             
-            document.getElementById("resultText").innerText = "ကံစမ်းနေပါသည်...";
+            const resultEl = document.getElementById("resultText");
+            resultEl.className = "spin-text";
+            resultEl.innerText = "ကံစမ်းနေပါသည်...";
             document.getElementById("spinBtn").disabled = true;
 
             let targetIndex;
             
-            // ထိန်းချုပ်မှု Logic အသစ်: ၆ ကြိမ်မြောက်တိုင်းမှာ ဆုကျမည် (Cycle ပြန်စမည်)
-            // ဥပမာ - ၆ ကြိမ်၊ ၁၂ ကြိမ်၊ ၁၈ ကြိမ်မြောက် စသဖြင့်
+            // ထိန်းချုပ်မှု: ၆ ကြိမ်မြောက်တိုင်းမှာ ဆုကျမည်။ ကျန်အချိန် ဗလာကျမည်။
             if (spinCount % 6 === 0) {
-                // ဆု ၄ ခုထဲက Random ရွေးမည် (Index 1 မှ 4)
-                targetIndex = Math.floor(Math.random() * 4) + 1;
+                targetIndex = Math.floor(Math.random() * 4) + 1; // 1 to 4
             } else {
-                // ကျန်တဲ့ ၅ ခါလုံး ဗလာချည်းသာ ကျမည် (Index 0)
-                targetIndex = 0; 
+                targetIndex = 0; // 0 (ထပ်မံကံစမ်းပါ)
             }
 
-            const degreesPerSlice = 360 / numSegments;
-            const randomOffset = Math.floor(Math.random() * (degreesPerSlice - 10)) + 5; 
-            const base = Math.floor(currentRotation / 360) * 360;
-            const targetDegree = 360 - (targetIndex * degreesPerSlice + randomOffset);
+            // Pointer က အပေါ်တည့်တည့် (270 ဒီဂရီ) မှာ ရှိနေတဲ့အတွက် တွက်ချက်မှု
+            const degreesPerSlice = 360 / numSegments; // 72 degrees
+            const sliceCenterDegree = (targetIndex * degreesPerSlice) + (degreesPerSlice / 2);
             
-            // ယခင်လည်ထားတဲ့နေရာကနေ ၅ ပတ်ပိုလည်ပြီး ဆက်လည်မယ်
-            const newRotation = base + (360 * 5) + targetDegree;
+            // Random offset (-15 ကနေ +15 ဒီဂရီကြား) ထည့်ပြီး တစ်နေရာတည်း ရပ်တာမျိုး မဖြစ်အောင်လုပ်မယ်
+            const randomOffset = Math.floor(Math.random() * 30) - 15; 
+            
+            // အပေါ်တည့်တည့် (270 ဒီဂရီ) ကို လိုချင်တဲ့ အပိုင်း ရောက်လာအောင် တွက်ချက်ခြင်း
+            let targetDegree = 270 - sliceCenterDegree + randomOffset;
+            
+            // အနှုတ်တန်ဖိုးဖြစ်နေပါက 360 ပေါင်းထည့်မည်
+            if (targetDegree < 0) {
+                targetDegree += 360;
+            }
 
-            currentRotation = newRotation;
+            // အနည်းဆုံး ၅ ပတ် (1800 ဒီဂရီ) လည်ပြီးမှ ရပ်မည်
+            const extraSpins = 360 * 5; 
             
-            canvas.style.transition = "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)"; 
+            // ယခင်လည်ထားတဲ့ Current Rotation ကနေ အကြွင်းကို ရှာပြီး ဆက်လည်အောင် တွက်မည်
+            const currentRemainder = currentRotation % 360;
+            let degreeToRotate = targetDegree - currentRemainder;
+            
+            if (degreeToRotate < 0) {
+                degreeToRotate += 360;
+            }
+
+            currentRotation += extraSpins + degreeToRotate;
+            
+            // Smooth ဖြစ်တဲ့ CSS Transition ဖြင့် လှည့်မည် (၅ စက္ကန့် ကြာမည်)
+            canvas.style.transition = "transform 5s cubic-bezier(0.15, 0.85, 0.25, 1)"; 
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
@@ -187,13 +260,13 @@
                 document.getElementById("spinBtn").disabled = false;
                 
                 if (targetIndex === 0) {
-                    document.getElementById("resultText").style.color = "#7f8c8d";
-                    document.getElementById("resultText").innerText = `ရလဒ်: ${segments[targetIndex]}`;
+                    resultEl.className = "lose-text";
+                    resultEl.innerText = `ရလဒ်: ${segments[targetIndex]}`;
                 } else {
-                    document.getElementById("resultText").style.color = "#27ae60";
-                    document.getElementById("resultText").innerText = `ဂုဏ်ယူပါတယ်! သင် ${segments[targetIndex]} ရရှိပါသည်`;
+                    resultEl.className = "win-text";
+                    resultEl.innerText = `ဂုဏ်ယူပါတယ်! သင် ${segments[targetIndex]} ရရှိပါသည် 🎉`;
                 }
-            }, 4000);
+            }, 5000);
         }
     </script>
 </body>
