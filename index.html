@@ -1,273 +1,330 @@
 <!DOCTYPE html>
+
 <html lang="my">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Spin Wheel - Pro Edition</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lucky Spin Wheel</title>
 
-        body {
-            font-family: 'Padauk', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(135deg, #1e272e, #2f3640);
-            color: #ecf0f1;
-            margin: 0;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
+<!-- PWA -->
 
-        h1 {
-            color: #f1c40f;
-            font-size: 38px;
-            margin-bottom: 40px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0e17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lucky Spin">
+<link rel="apple-touch-icon" href="icon-512.png">
 
-        .wheel-container {
-            position: relative;
-            width: 380px;
-            height: 380px;
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+Myanmar:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0f0e17;--card:#1a1830;--gold:#ffd700;--red:#e94560;--teal:#4ecdc4;}
+body{
+  background:var(--bg);
+  font-family:'Noto Sans Myanmar','Segoe UI',sans-serif;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;
+}
+#pts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.pt{position:absolute;border-radius:50%;animation:ptFloat linear infinite;opacity:0;}
+@keyframes ptFloat{
+  0%{transform:translateY(100vh);opacity:0;}10%{opacity:var(--op);}
+  90%{opacity:var(--op);}100%{transform:translateY(-10vh);opacity:0;}
+}
+.wrap{
+  position:relative;z-index:1;width:100%;max-width:460px;
+  padding:20px 16px max(50px,calc(50px + env(safe-area-inset-bottom)));
+  display:flex;flex-direction:column;align-items:center;gap:22px;
+}
+header{text-align:center;}
+header h1{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(2rem,8vw,3rem);
+  background:linear-gradient(120deg,#ffd700,#ff6b6b,#4ecdc4,#ffd700);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shine 3s linear infinite;letter-spacing:2px;
+}
+@keyframes shine{to{background-position:200% center;}}
+header p{color:rgba(255,255,255,.3);font-size:.72rem;letter-spacing:3px;margin-top:4px;}
 
-        /* Premium Wheel Styling */
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 0 0 8px #2c3e50, 0 0 0 12px #f1c40f;
-            background-color: #fff;
-        }
+.stat-pill{
+background:var(–card);border:1px solid rgba(255,255,255,.08);
+border-radius:999px;padding:6px 20px;
+font-size:.8rem;color:rgba(255,255,255,.5);
+}
+.stat-pill b{color:var(–gold);}
 
-        /* 3D ဆန်ဆန် လှပသော မြှား (Top Pointer) */
-        .pointer {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 55px;
-            background: #e74c3c;
-            clip-path: polygon(50% 100%, 0 20%, 0 0, 100% 0, 100% 20%);
-            z-index: 10;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
-            border-top: 5px solid #c0392b;
-        }
+.wheel-wrap{position:relative;width:320px;height:320px;}
+.glow-ring{
+position:absolute;inset:-6px;border-radius:50%;
+background:conic-gradient(#ff6b6b,#ffe66d,#4ecdc4,#45b7d1,#96e6a1,#ff6b6b);
+animation:ringRot 6s linear infinite;filter:blur(6px);opacity:.4;z-index:0;
+}
+@keyframes ringRot{to{transform:rotate(360deg);}}
+canvas#cv{
+position:relative;z-index:1;width:320px;height:320px;
+border-radius:50%;display:block;
+box-shadow:0 0 50px rgba(78,205,196,.2),0 20px 50px rgba(0,0,0,.65);
+}
+.ptr{
+position:absolute;top:-22px;left:50%;
+transform:translateX(-50%);z-index:5;
+filter:drop-shadow(0 3px 8px rgba(0,0,0,.8));
+}
+.ptr svg{width:34px;height:44px;}
 
-        /* မြှားပေါ်က အလှဆင် ရွှေရောင်စက်ဝိုင်းလေး */
-        .pointer::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 12px;
-            background: #f1c40f;
-            border-radius: 50%;
-            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3);
-        }
+.spin-btn{
+background:linear-gradient(135deg,#e94560,#b71c4f);
+border:none;border-radius:999px;padding:15px 60px;
+font-family:‘Fredoka One’,cursive;font-size:1.35rem;
+color:#fff;letter-spacing:1px;cursor:pointer;
+box-shadow:0 8px 24px rgba(233,69,96,.45),0 2px 0 rgba(0,0,0,.4);
+transition:all .2s;position:relative;overflow:hidden;
+}
+.spin-btn::after{
+content:’’;position:absolute;top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+transition:left .4s;
+}
+.spin-btn:hover:not(:disabled)::after{left:100%;}
+.spin-btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 28px rgba(233,69,96,.55);}
+.spin-btn:active:not(:disabled){transform:translateY(0);}
+.spin-btn:disabled{opacity:.45;cursor:not-allowed;}
 
-        .btn-glow {
-            padding: 18px 50px;
-            font-size: 22px;
-            font-family: 'Padauk', sans-serif;
-            font-weight: bold;
-            cursor: pointer;
-            background: linear-gradient(to right, #00b09b, #96c93d);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 8px 25px rgba(0, 176, 155, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-        }
+.hist-title{text-align:center;font-size:.7rem;letter-spacing:2px;color:rgba(255,255,255,.25);margin-bottom:9px;}
+.hist-list{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;min-height:24px;width:100%;}
+.hist-chip{
+padding:4px 13px;border-radius:999px;
+font-size:.72rem;font-weight:700;
+animation:popIn .25s forwards;opacity:0;
+}
+@keyframes popIn{to{opacity:1;}}
 
-        .btn-glow:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 176, 155, 0.6);
-        }
+#overlay{
+position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);
+z-index:100;display:flex;align-items:center;justify-content:center;
+opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#overlay.show{opacity:1;pointer-events:all;}
+.res-card{
+background:linear-gradient(145deg,#1a1830,#0f0e17);
+border:2px solid rgba(255,255,255,.12);border-radius:26px;
+padding:40px 36px;text-align:center;width:min(90vw,310px);
+transform:scale(.8) translateY(30px);
+transition:transform .4s cubic-bezier(.175,.885,.32,1.275);
+}
+#overlay.show .res-card{transform:scale(1) translateY(0);}
+.res-emoji{font-size:4rem;display:block;animation:bnc .5s;}
+@keyframes bnc{0%{transform:scale(0) rotate(-15deg);}65%{transform:scale(1.25) rotate(6deg);}100%{transform:scale(1) rotate(0);}}
+.res-lbl{font-size:.68rem;letter-spacing:3px;color:rgba(255,255,255,.35);margin:8px 0 5px;}
+.res-txt{font-family:‘Fredoka One’,cursive;font-size:1.9rem;color:#fff;margin-bottom:24px;text-shadow:0 0 20px currentColor;}
+.res-close{
+background:linear-gradient(135deg,#e94560,#b71c4f);border:none;border-radius:999px;
+padding:11px 36px;color:#fff;font-family:‘Fredoka One’,cursive;
+font-size:1rem;letter-spacing:1px;cursor:pointer;transition:transform .2s;
+}
+.res-close:hover{transform:scale(1.05);}
 
-        .btn-glow:active {
-            transform: translateY(1px);
-        }
+#cf{position:fixed;inset:0;pointer-events:none;z-index:200;}
+.cfp{position:absolute;top:-12px;animation:cfFall linear forwards;border-radius:3px;}
+@keyframes cfFall{to{transform:translateY(105vh) rotate(900deg);opacity:0;}}
+</style>
 
-        .btn-glow:disabled {
-            background: #7f8c8d;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-            color: #bdc3c7;
-        }
-
-        #resultText {
-            font-size: 26px;
-            font-weight: bold;
-            margin-top: 30px;
-            min-height: 40px;
-            text-align: center;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
-        }
-
-        .win-text { color: #2ecc71; }
-        .lose-text { color: #e74c3c; }
-        .spin-text { color: #f1c40f; }
-
-    </style>
 </head>
 <body>
 
-    <h1>Lucky Spin Wheel</h1>
+<div id="pts"></div>
+<div id="cf"></div>
 
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="380" height="380"></canvas>
+<div id="overlay">
+  <div class="res-card">
+    <span class="res-emoji" id="resEmoji"></span>
+    <div class="res-lbl">ရလဒ်</div>
+    <div class="res-txt" id="resTxt"></div>
+    <button class="res-close" onclick="closeResult()">ကောင်းပြီ!</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1>🎡 Lucky Spin Wheel</h1>
+    <p>✦ ကံကြမ္မာစမ်းကြစို့ ✦</p>
+  </header>
+
+  <div class="stat-pill">🔄 စုစုပေါင်း <b id="totalEl">0</b> ကြိမ်လှည့်ပြီး</div>
+
+  <div class="wheel-wrap">
+    <div class="glow-ring"></div>
+    <div class="ptr">
+      <svg viewBox="0 0 34 44">
+        <polygon points="17,42 1,10 33,10" fill="#FFD700" stroke="white" stroke-width="1.5"/>
+        <circle cx="17" cy="11" r="5" fill="#FFD700" stroke="white" stroke-width="1.5"/>
+      </svg>
     </div>
+    <canvas id="cv" width="320" height="320"></canvas>
+  </div>
 
-    <button id="spinBtn" class="btn-glow" onclick="spin()">လှည့်မည်</button>
-    <p id="resultText"></p>
+<button class="spin-btn" id="spinBtn" onclick="doSpin()">🎯 လှည့်မယ်!</button>
 
-    <script>
-        const segments = ["ထပ်မံကံစမ်းပါ", "နောက်တစ်ကြိမ်", "M-150", "C-vitt", "Sting"];
-        
-        // Premium အရောင်များ (Deep & Vibrant Colors)
-        const colors = [
-            "#576574", // Dark Gray (ထပ်မံကံစမ်းပါ)
-            "#2e86de", // Deep Blue (နောက်တစ်ကြိမ်)
-            "#feca57", // Golden Yellow (M-150)
-            "#ff9f43", // Vibrant Orange (C-vitt)
-            "#ee5253"  // Bright Red (Sting)
-        ];
+  <div style="width:100%">
+    <div class="hist-title">မှတ်တမ်း</div>
+    <div class="hist-list" id="histList"></div>
+  </div>
+</div>
 
-        const canvas = document.getElementById("wheel");
-        const ctx = canvas.getContext("2d");
-        const numSegments = segments.length;
-        const sliceAngle = (2 * Math.PI) / numSegments;
+<script>
+const SEGS = [
+  { label:"ထပ်မံကံစမ်းပါ",         short:"ကံစမ်းပါ", color:"#FF6B6B", emoji:"🔄", blank:true  },
+  { label:"နောက်တစ်ကြိမ်\nလှည့်ပါ", short:"လှည့်ပါ",  color:"#FFD700", emoji:"↩️", blank:true  },
+  { label:"M-150",                  short:"M-150",   color:"#4ECDC4", emoji:"⚡", blank:false },
+  { label:"C-Vitt",                 short:"C-Vitt",  color:"#45B7D1", emoji:"🍊", blank:false },
+  { label:"String",                 short:"String",  color:"#96E6A1", emoji:"🎸", blank:false },
+];
+const BLANKS=[0,1], PRIZES=[2,3,4];
+const N=SEGS.length, ARC=(2*Math.PI)/N;
 
-        function drawWheel() {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = centerX;
+let _pos=0, totalSpins=0, spinning=false, rot=0;
 
-            for (let i = 0; i < numSegments; i++) {
-                // အပိုင်းများ ဆွဲခြင်း
-                ctx.beginPath();
-                ctx.fillStyle = colors[i];
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "#ffffff";
-                ctx.stroke();
+// Particles
+(function(){
+  const pc=document.getElementById('pts');
+  for(let i=0;i<55;i++){
+    const d=document.createElement('div');d.className='pt';
+    const sz=2+Math.random()*4,op=.08+Math.random()*.25;
+    d.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;
+      background:hsl(${Math.random()*360},70%,70%);--op:${op};
+      animation-duration:${7+Math.random()*12}s;animation-delay:${-Math.random()*15}s;`;
+    pc.appendChild(d);
+  }
+})();
 
-                // စာသားများကို ဖတ်ရလွယ်အောင် ဗဟိုကနေ ဖြာထွက်တဲ့ပုံစံ ရေးခြင်း
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(i * sliceAngle + sliceAngle / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 22px 'Padauk', sans-serif";
-                ctx.shadowColor = "rgba(0,0,0,0.6)";
-                ctx.shadowBlur = 6;
-                // အစွန်ကနေ အနည်းငယ်ခွာပြီးရေးမည်
-                ctx.fillText(segments[i], radius - 30, 8);
-                ctx.restore();
-            }
+function draw(r){
+  const cv=document.getElementById('cv');
+  const ctx=cv.getContext('2d');
+  const CX=cv.width/2,CY=cv.height/2,R=CX-4;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  SEGS.forEach((seg,i)=>{
+    const a0=r-Math.PI/2+i*ARC,a1=a0+ARC,am=a0+ARC/2;
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,R,a0,a1);ctx.closePath();
+    const gx=CX+Math.cos(am)*R*.55,gy=CY+Math.sin(am)*R*.55;
+    const gr=ctx.createRadialGradient(CX,CY,8,gx,gy,R*.9);
+    gr.addColorStop(0,lighten(seg.color,40));gr.addColorStop(1,seg.color);
+    ctx.fillStyle=gr;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(CX,CY);ctx.rotate(am);
+    ctx.font='15px serif';ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=4;ctx.fillStyle='#fff';
+    ctx.fillText(seg.emoji,R-6,0);
+    ctx.font='bold 11.5px "Noto Sans Myanmar","Segoe UI",sans-serif';ctx.shadowBlur=5;
+    const lines=seg.label.split('\n');
+    if(lines.length===1){ctx.fillText(lines[0],R-26,0);}
+    else{ctx.fillText(lines[0],R-26,-7);ctx.fillText(lines[1],R-26,7);}
+    ctx.restore();
+  });
+  ctx.save();
+  ctx.beginPath();ctx.arc(CX,CY,R+1,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+  ctx.save();
+  const hg=ctx.createRadialGradient(CX,CY,0,CX,CY,28);
+  hg.addColorStop(0,'#fff');hg.addColorStop(1,'#ccc');
+  ctx.beginPath();ctx.arc(CX,CY,28,0,Math.PI*2);
+  ctx.fillStyle=hg;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+}
 
-            // Wheel ရဲ့ အလယ်ဗဟိုမှာ ရွှေရောင် ဝင်ရိုး (Center Hub) ထည့်ခြင်း
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
-            ctx.fillStyle = "#2c3e50";
-            ctx.fill();
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = "#f1c40f";
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
-            ctx.fillStyle = "#f1c40f";
-            ctx.fill();
-        }
+function lighten(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  return '#'+[Math.min(255,(n>>16)+amt),Math.min(255,((n>>8)&0xff)+amt),Math.min(255,(n&0xff)+amt)]
+    .map(v=>v.toString(16).padStart(2,'0')).join('');
+}
 
-        drawWheel(); 
+function pickTarget(){
+  if(_pos<5) return BLANKS[Math.floor(Math.random()*BLANKS.length)];
+  return PRIZES[Math.floor(Math.random()*PRIZES.length)];
+}
 
-        let spinCount = 0; 
-        let currentRotation = 0;
-        let isSpinning = false;
+function doSpin(){
+  if(spinning)return;
+  spinning=true; totalSpins++;
+  document.getElementById('totalEl').textContent=totalSpins;
+  document.getElementById('spinBtn').disabled=true;
+  spinTo(pickTarget());
+}
 
-        function spin() {
-            if (isSpinning) return; 
-            isSpinning = true;
-            spinCount++; 
-            
-            const resultEl = document.getElementById("resultText");
-            resultEl.className = "spin-text";
-            resultEl.innerText = "ကံစမ်းနေပါသည်...";
-            document.getElementById("spinBtn").disabled = true;
+function spinTo(segIdx){
+  const nudge=(Math.random()*.7-.35)*ARC;
+  const targetRot=-segIdx*ARC-ARC/2+nudge;
+  const fullSpins=6+Math.floor(Math.random()*5);
+  let diff=((targetRot-rot)%(2*Math.PI));
+  if(diff>0)diff-=2*Math.PI;
+  const finalRot=rot+diff-fullSpins*2*Math.PI;
+  const startRot=rot,dur=4200+Math.random()*1500,t0=performance.now();
+  function ease(t){return 1-Math.pow(1-t,4);}
+  function frame(now){
+    const t=Math.min((now-t0)/dur,1);
+    rot=startRot+(finalRot-startRot)*ease(t);
+    draw(rot);
+    if(t<1){requestAnimationFrame(frame);return;}
+    rot=finalRot;draw(rot);
+    spinning=false;
+    _pos++; if(_pos>5)_pos=0;
+    document.getElementById('spinBtn').disabled=false;
+    setTimeout(()=>showResult(segIdx),350);
+  }
+  requestAnimationFrame(frame);
+}
 
-            let targetIndex;
-            
-            // ထိန်းချုပ်မှု: ၆ ကြိမ်မြောက်တိုင်းမှာ ဆုကျမည်။ ကျန်အချိန် ဗလာကျမည်။
-            if (spinCount % 6 === 0) {
-                targetIndex = Math.floor(Math.random() * 4) + 1; // 1 to 4
-            } else {
-                targetIndex = 0; // 0 (ထပ်မံကံစမ်းပါ)
-            }
+function showResult(idx){
+  const s=SEGS[idx];
+  document.getElementById('resEmoji').textContent=s.emoji;
+  document.getElementById('resTxt').textContent=s.label.replace('\n','');
+  document.getElementById('resTxt').style.color=s.color;
+  document.getElementById('overlay').classList.add('show');
+  addHist(idx);
+  if(!s.blank)doConfetti(s.color);
+}
+function closeResult(){document.getElementById('overlay').classList.remove('show');}
+document.getElementById('overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('overlay'))closeResult();
+});
 
-            // Pointer က အပေါ်တည့်တည့် (270 ဒီဂရီ) မှာ ရှိနေတဲ့အတွက် တွက်ချက်မှု
-            const degreesPerSlice = 360 / numSegments; // 72 degrees
-            const sliceCenterDegree = (targetIndex * degreesPerSlice) + (degreesPerSlice / 2);
-            
-            // Random offset (-15 ကနေ +15 ဒီဂရီကြား) ထည့်ပြီး တစ်နေရာတည်း ရပ်တာမျိုး မဖြစ်အောင်လုပ်မယ်
-            const randomOffset = Math.floor(Math.random() * 30) - 15; 
-            
-            // အပေါ်တည့်တည့် (270 ဒီဂရီ) ကို လိုချင်တဲ့ အပိုင်း ရောက်လာအောင် တွက်ချက်ခြင်း
-            let targetDegree = 270 - sliceCenterDegree + randomOffset;
-            
-            // အနှုတ်တန်ဖိုးဖြစ်နေပါက 360 ပေါင်းထည့်မည်
-            if (targetDegree < 0) {
-                targetDegree += 360;
-            }
+function addHist(idx){
+  const s=SEGS[idx];
+  const list=document.getElementById('histList');
+  const c=document.createElement('div');c.className='hist-chip';
+  c.textContent=`#${totalSpins} ${s.emoji} ${s.short}`;
+  c.style.cssText=`background:${s.color}22;border:1px solid ${s.color}55;color:${s.color};`;
+  list.insertBefore(c,list.firstChild);
+  while(list.children.length>14)list.removeChild(list.lastChild);
+}
 
-            // အနည်းဆုံး ၅ ပတ် (1800 ဒီဂရီ) လည်ပြီးမှ ရပ်မည်
-            const extraSpins = 360 * 5; 
-            
-            // ယခင်လည်ထားတဲ့ Current Rotation ကနေ အကြွင်းကို ရှာပြီး ဆက်လည်အောင် တွက်မည်
-            const currentRemainder = currentRotation % 360;
-            let degreeToRotate = targetDegree - currentRemainder;
-            
-            if (degreeToRotate < 0) {
-                degreeToRotate += 360;
-            }
+function doConfetti(mc){
+  const cols=[mc,'#FFD700','#FF6B6B','#4ECDC4','#FFE66D','#96E6A1','#fff'];
+  const con=document.getElementById('cf');
+  for(let i=0;i<80;i++){
+    const c=document.createElement('div');c.className='cfp';
+    const w=6+Math.random()*8;
+    c.style.cssText=`width:${w}px;height:${w}px;left:${Math.random()*100}vw;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      border-radius:${Math.random()>.5?'50%':'3px'};
+      animation-duration:${1.8+Math.random()*2.2}s;
+      animation-delay:${Math.random()*.7}s;`;
+    con.appendChild(c);setTimeout(()=>c.remove(),4500);
+  }
+}
 
-            currentRotation += extraSpins + degreeToRotate;
-            
-            // Smooth ဖြစ်တဲ့ CSS Transition ဖြင့် လှည့်မည် (၅ စက္ကန့် ကြာမည်)
-            canvas.style.transition = "transform 5s cubic-bezier(0.15, 0.85, 0.25, 1)"; 
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 
-            setTimeout(() => {
-                isSpinning = false;
-                document.getElementById("spinBtn").disabled = false;
-                
-                if (targetIndex === 0) {
-                    resultEl.className = "lose-text";
-                    resultEl.innerText = `ရလဒ်: ${segments[targetIndex]}`;
-                } else {
-                    resultEl.className = "win-text";
-                    resultEl.innerText = `ဂုဏ်ယူပါတယ်! သင် ${segments[targetIndex]} ရရှိပါသည် 🎉`;
-                }
-            }, 5000);
-        }
-    </script>
+draw(rot);
+</script>
+
 </body>
 </html>
