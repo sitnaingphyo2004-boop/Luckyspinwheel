@@ -185,7 +185,11 @@ const SEGS = [
 const BLANKS=[0,1], PRIZES=[2,3,4];
 const N=SEGS.length, ARC=(2*Math.PI)/N;
 
-let _pos=0, totalSpins=0, spinning=false, rot=0;
+// Persist cycle position across sessions
+let _pos = parseInt(localStorage.getItem('_pos')||'0');
+let totalSpins = parseInt(localStorage.getItem('totalSpins')||'0');
+let spinning=false, rot=0;
+document.getElementById('totalEl').textContent = totalSpins;
 
 // Particles
 (function(){
@@ -244,7 +248,7 @@ function lighten(hex,amt){
 }
 
 function pickTarget(){
-  if(_pos<5) return BLANKS[Math.floor(Math.random()*BLANKS.length)];
+  if(_pos<3) return BLANKS[Math.floor(Math.random()*BLANKS.length)];
   return PRIZES[Math.floor(Math.random()*PRIZES.length)];
 }
 
@@ -272,7 +276,10 @@ function spinTo(segIdx){
     if(t<1){requestAnimationFrame(frame);return;}
     rot=finalRot;draw(rot);
     spinning=false;
-    _pos++; if(_pos>5)_pos=0;
+    _pos++;
+    if(_pos>3) _pos=0;
+    localStorage.setItem('_pos', _pos);
+    localStorage.setItem('totalSpins', totalSpins);
     document.getElementById('spinBtn').disabled=false;
     setTimeout(()=>showResult(segIdx),350);
   }
